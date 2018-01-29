@@ -8,7 +8,7 @@ var addBtn = null;
 var backBtn = null;
 
 function priceReg (value){
-	value = value.replace(/[^\d.]/g,"");  //清除“数字”和“.”以外的字
+	value = value.replace(/[^\d.]/g,"");  //清除“数字”和“.”
 		value = value.replace(/^\./g,"");  //验证第一个字符是数字而不是.
     value = value.replace(/\.{2,}/g,"."); //只保留第一个. 清除多余的.
     value = value.replace(".","$#$").replace(/\./g,"").replace("$#$",".");//去掉特殊符号￥
