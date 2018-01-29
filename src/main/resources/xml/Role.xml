@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.jbit.smbms.dao.RoleDao">
+
+    <!--公用的sql语句-->
+    <sql id="comm">
+        <if test="roleCode!=null and roleCode!=''">
+            and roleCode like concat('%',#{roleCode},'%')
+        </if>
+        <if test="roleName!=null and roleName!=''">
+            and roleName like concat('%',#{roleName},'%')
+        </if>
+    </sql>
+
+
+    <select id="getAllRoleList" resultType="Role">
+        SELECT * FROM `smbms_role`
+        <where>
+            <if test="id!=null"> and id=#{id} </if>
+        </where>
+    </select>
+
+
+    <update id="editRole">
+    UPDATE `smbms_role`
+    <set>
+        <if test="roleCode!=null and roleCode!=''">`roleCode`=#{roleCode},</if>
+        <if test="roleName!=null and roleName!=''">`roleName`=#{roleName},</if>
+        <if test="createdBy>0">`createdBy`=#{createdBy},</if>
+        <if test="creationDate!=null">`creationDate`=#{creationDate},</if>
+        <if test="modifyBy>0">`modifyBy`=#{modifyBy},</if>
+        <if test="modifyDate!=null">`modifyDate`=#{modifyDate},</if>
+    </set>
+        where id=#{id}
+    </update>
+
+    <select id="getRoleByParam" resultType="Role">
+        SELECT * FROM  `smbms_role`
+        <where>
+            <include refid="comm"/>
+        </where>
+        order by creationDate desc limit #{limitOne},#{pageSize}
+    </select>
+
+    <select id="getUserCountByParma" resultType="_int">
+        SELECT count(1) FROM  `smbms_role`
+        <where>
+            <include refid="comm"/>
+        </where>
+    </select>
+
+    <insert id="addRole">
+        INSERT INTO `smbms_role`(roleCode,roleName,createdBy,creationDate) VALUES(#{roleCode},#{roleName},#{createdBy},#{creationDate})
+    </insert>
+
+    <delete id="delRole">
+        DELETE FROM `smbms_role`
+        <where>
+            <if test="id>0">
+               and id=#{id}
+            </if>
+        </where>
+    </delete>
+
+    <select id="getRoleByCode" resultType="_int">
+        select count(1) from smbms_role
+        <where>
+            <if test="roleCode!=''"> and roleCode=#{roleCode}</if>
+        </where>
+    </select>
+
+</mapper>

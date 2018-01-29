@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.jbit.smbms.dao.UserDao">
+
+    <sql id="commSql">
+        <if test="userName!=null and userName!=''"> and userName like concat('%',#{userName},'%')</if>
+        <if test="userRole!=null"> and userRole=#{userRole}</if>
+    </sql>
+
+    <select id="queryUser" resultType="User" >
+        select * from smbms_user
+        where userCode =#{userCode} and userPassword=#{userPassword}
+    </select>
+
+    <select id="getUserByIdAndPwd" resultType="_int">
+        select count(1) from smbms_user
+          where  id=#{id}  and userPassword=#{userPassword}
+    </select>
+
+    <update id="editUser">
+      UPDATE `smbms_user`
+      <set>
+          <if test="userPassword!=null and userPassword!=''">`userPassword`=#{userPassword},</if>
+          <if test="userCode!=null and userCode!=''">`userCode`=#{userCode},</if>
+          <if test="userName!=null and userName!=''">`userName`=#{userName},</if>
+          <if test="gender!=null and gender!=''">`gender`=#{gender},</if>
+          <if test="birthday!=null">`birthday`=#{birthday},</if>
+          <if test="phone!=null and phone!=''">`phone`=#{phone},</if>
+          <if test="address!=null and address!=''">`address`=#{address},</if>
+          <if test="userRole!=null">`userRole`=#{userRole},</if>
+          <if test="createdBy!=null ">`createdBy`=#{createdBy},</if>
+          <if test="creationDate!=null">`creationDate`=#{creationDate},</if>
+          <if test="modifyBy!=null">`modifyBy`=#{modifyBy},</if>
+          <if test="modifyDate!=null">`modifyDate`=#{modifyDate},</if>
+          <if test="idPhoto!=null and idPhoto!=''">`idPhoto`=#{idPhoto},</if>
+      </set>
+        where `id`=#{id}
+    </update>
+    <!--YEAR(CURDATE())-YEAR(birthday)-(RIGHT(CURDATE(),5)<RIGHT(birthday,5))-->
+    <select id="getUserByParam" resultMap="userList">
+        SELECT u.*,YEAR( from_days( datediff( now(), birthday))) age,r.roleName,r.id rid FROM `smbms_user` u,`smbms_role` r WHERE r.id=u.userRole
+        <!--引用上面的公用的sql代码-->
+       <include refid="commSql"/>
+        order by creationDate desc limit #{limitOne},#{pageSize}
+    </select>
+
+    <resultMap id="userList" type="User">
+        <id property="id" column="id"/>
+        <result property="userCode" column="userCode"/>
+        <result property="userName" column="userName"/>
+        <result property="gender" column="gender"/>
+        <result property="birthday" column="birthday"/>
+        <result property="phone" column="phone"/>
+        <result property="age" column="age"/>
+        <result property="idPhoto" column="idPhoto"/>
+        <association property="role" javaType="Role" resultMap="roles"/>
+    </resultMap>
+    <resultMap id="roles" type="Role">
+        <id property="id" column="rid"/>
+        <result property="roleName" column="roleName"/>
+    </resultMap>
+
+    <select id="getUserCountByParma" resultType="_int">
+        SELECT COUNT(1) FROM `smbms_user`
+        <where>
+            <!--引用上面的公用的sql代码-->
+            <include refid="commSql"/>
+        </where>
+    </select>
+
+    <select id="getUserCountByCode" resultType="_int">
+        select count(1) from smbms_user where userCode=#{userCode}
+    </select>
+
+        <insert id="addUser">
+        INSERT INTO `smbms_user`(`userCode`,`userName`,`userPassword`,`gender`,`birthday`,`phone`,`address`,`userRole`,`createdBy`,`creationDate`,idPhoto)
+        VALUES(#{userCode},#{userName},#{userPassword},#{gender},#{birthday},#{phone},#{address},#{userRole},#{createdBy},#{creationDate},#{idPhoto});
+       </insert>
+
+    <select id="getUserById" resultType="User">
+        select * from smbms_user
+        <where>
+        <if test="id!=null"> and  id=#{id}</if>
+        </where>
+    </select>
+
+    <delete id="delUser">
+        delete from  smbms_user
+        <where>
+            <if test="id!=null"> and id=#{id}</if>
+        </where>
+    </delete>
+
+    <select id="getUserByRid" resultType="_int">
+        select count(*) from smbms_user
+        <where>
+            <if test="userRole>0"> and  userRole=#{userRole}</if>
+        </where>
+    </select>
+
+</mapper>

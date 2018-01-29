@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+        xmlns="http://www.springframework.org/schema/beans"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:p="http://www.springframework.org/schema/p"
+        xmlns:aop="http://www.springframework.org/schema/aop"
+        xmlns:tx="http://www.springframework.org/schema/tx"
+        xmlns:mvc="http://www.springframework.org/schema/mvc"
+        xmlns:context="http://www.springframework.org/schema/context"
+        xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+	http://www.springframework.org/schema/aop
+	http://www.springframework.org/schema/aop/spring-aop-3.1.xsd
+    http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context-3.1.xsd
+    http://www.springframework.org/schema/mvc
+	http://www.springframework.org/schema/mvc/spring-mvc-3.1.xsd
+    http://www.springframework.org/schema/tx
+	http://www.springframework.org/schema/tx/spring-tx-3.1.xsd"
+        default-autowire="byName" >
+
+
+
+    <!--&lt;!&ndash;<&#45;&#45;声明全局异常&ndash;&gt;-->
+    <bean class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+        <property name="exceptionMappings" >
+            <props>
+                <!--error为抛出到的jsp文件试图名字-->
+                <prop key="RuntimeExeception">error</prop>
+            </props>
+        </property>
+    </bean>
+
+    <!--图片的试图解析器-->
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <property name="maxInMemorySize" value="50000000"/>
+        <property name="defaultEncoding" value="UTF-8"/>
+    </bean>
+
+
+    <!--放过的指定的文件，不用拦截-->
+    <mvc:resources mapping="/static/**" location="/static/"/>
+
+
+    <!--&lt;!&ndash;注解驱动的配置&ndash;&gt;后面加了转换服务，相当于自动会在文本框获得之后自动装换为date类型，-->
+    <mvc:annotation-driven conversion-service="conversionService">
+        <!--//设置json解析的中文，全局防止乱码，不用每个设置produces = {"application/json;charset=utf-8"}-->
+        <mvc:message-converters>
+            <bean class="org.springframework.http.converter.StringHttpMessageConverter">
+                <property name="supportedMediaTypes">
+                    <list>
+                        <value>application/json;charset=UTF-8</value>
+                    </list>
+                </property>
+            </bean>
+            <!--&lt;!&ndash;解决通过ajax 生成json对象对时间的格式转化&ndash;&gt;(在控制器方法直接返回一个对象，然后自动封装成json对象)-->
+            <bean class="com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter">
+                <property name="supportedMediaTypes">
+                    <list>
+                        <value>text/html;charset=UTF-8</value>
+                        <value>application/json</value>
+                    </list>
+                </property>
+                <property name="features">
+                    <list>
+                        <!--输出的date日期转化器-->
+                        <value>WriteDateUseDateFormat</value>
+                    </list>
+                </property>
+            </bean>
+
+        </mvc:message-converters>
+    </mvc:annotation-driven>
+
+    <!--配置多视图解析器，允许同样的内容数据呈现不同的view-->
+        <!-- 多视图解析器 -->
+    <!-- 多视图解析器 -->
+    <bean class="org.springframework.web.servlet.view.ContentNegotiatingViewResolver">
+        <!-- 指定json 用什么工具解析  xml 用什么工具解析 -->
+        <property name="defaultViews">
+            <list>
+                <bean class="com.alibaba.fastjson.support.spring.FastJsonJsonView">
+                    <property name="charset" value="UTF-8"/>
+                </bean>
+                <bean class="org.springframework.web.servlet.view.xml.MarshallingView">
+                    <constructor-arg>
+                        <bean class="org.springframework.oxm.jaxb.Jaxb2Marshaller">
+                            <property name="classesToBeBound">
+                                <list>
+                                    <value>cn.jbit.smbms.entity.Message</value>
+                                </list>
+                            </property>
+                        </bean>
+                    </constructor-arg>
+                </bean>
+            </list>
+        </property>
+        <!-- 指定 jsp解析器  视图解析器-->
+        <property name="viewResolvers">
+            <list>
+                <bean	class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+                    <property name="prefix" value="/WEB-INF/jsp/" />
+                    <property name="suffix" value=".jsp" />
+                </bean>
+            </list>
+        </property>
+    </bean>
+
+    <!--&lt;!&ndash;配置多视图解析器同上&ndash;&gt;-->
+    <!--<bean class="org.springframework.web.servlet.view.ContentNegotiatingViewResolver">-->
+        <!--<property name="favorParameter" value="true"/>-->
+        <!--<property name="defaultViews" value="text/html"/>-->
+        <!--<property name="mediaTypes">-->
+            <!--<map>-->
+                <!--<entry key="html" value="text/html;charset=UTF-8"/>-->
+                <!--<entry key="json" value="application/json;charset=UTF-8"/>-->
+                <!--<entry key="xml" value="application/xml;charset=UTF-8"/>-->
+            <!--</map>-->
+        <!--</property>-->
+        <!--&lt;!&ndash; 指定 jsp解析器  视图解析器&ndash;&gt;-->
+        <!--<property name="viewResolvers">-->
+        <!--<list>-->
+        <!--<bean	class="org.springframework.web.servlet.view.InternalResourceViewResolver">-->
+        <!--<property name="prefix" value="/WEB-INF/jsp/" />-->
+        <!--<property name="suffix" value=".jsp" />-->
+        <!--</bean>-->
+        <!--</list>-->
+        <!--</property>-->
+    <!--</bean>-->
+
+    <!--配置文本框获得的String转化为Date类型  自动转换服务的bean-->
+    <bean id="conversionService" class="org.springframework.context.support.ConversionServiceFactoryBean">
+        <property name="converters">
+            <list>
+                <!--相当于配置此类的参数值，第一个:String 第二个:指定的格式-->
+                <bean class="cn.jbit.smbms.util.StringToDateConvert">
+                    <constructor-arg type="java.lang.String" value="yyyy-MM-dd"/>
+                </bean>
+            </list>
+        </property>
+    </bean>
+
+    <!--配置全局系统拦截器-->
+    <mvc:interceptors>
+        <mvc:interceptor>
+            <mvc:mapping path="/sys/**"/>
+            <bean class="cn.jbit.smbms.util.SysInterceptor"/>
+        </mvc:interceptor>
+    </mvc:interceptors>
+
+    <!--扫描注解的bean-->
+    <context:component-scan base-package="cn.jbit.smbms.controller,cn.jbit.smbms.biz"/>
+
+</beans>

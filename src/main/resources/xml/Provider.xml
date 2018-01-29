@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.jbit.smbms.dao.ProviderDao">
+
+    <sql id="commSql">
+        <if test="proCode!=null and proCode!=''">
+            and proCode like concat ('%',#{proCode},'%')
+        </if>
+        <if test="proName!=null and proName!=''">
+            and proName like concat ('%',#{proName},'%')
+        </if>
+    </sql>
+
+    <!--查询所有的供应商集合-->
+    <select id="getAllProvider" resultType="Provider">
+        select * from smbms_provider
+        <where>
+            <include refid="commSql"/>
+        </where>
+       order by creationDate desc limit #{limitOne},#{pageSize}
+    </select>
+
+    <!--查询所有的供应商条数-->
+    <select id="getAllProviderCount" resultType="_int">
+        select count(1) from smbms_provider
+        <where>
+            <include refid="commSql"/>
+        </where>
+    </select>
+
+    <!--查询所有的供应商集合-->
+    <select id="getProviders" resultType="Provider">
+        select * from smbms_provider
+        <where>
+            <if test="id!=null">
+                and id=#{id}
+            </if>
+        </where>
+    </select>
+
+    <update id="updateProvider">
+        update `smbms_provider`
+        <set>
+           <if test="proName!=null and proName!=''">`proName`=#{proName},</if>
+           <if test="proDesc!=null and proDesc!=''">`proDesc`=#{proDesc},</if>
+            <if test="proContact!=null and proContact!=''">`proContact`=#{proContact},</if>
+           <if test="proPhone!=null and proPhone!=''">`proPhone`=#{proPhone},</if>
+           <if test="proAddress!=null and proAddress!=''">`proAddress`=#{proAddress},</if>
+           <if test="proFax!=null and proFax!=''">`proFax`=#{proFax},</if>
+          <if test="modifyDate!=null">`modifyDate`=#{modifyDate},</if>
+           <if test="modifyBy!=null">`modifyBy`=#{modifyBy},</if>
+            <if test="comptyLicPicPath!=null and comptyLicPicPath!=''">`comptyLicPicPath`=#{comptyLicPicPath},</if>
+        </set>
+          where id=#{id}
+    </update>
+
+    <delete id="deleteProvider">
+        delete from smbms_provider where id=#{id}
+    </delete>
+
+    <insert id="addProvider">
+        insert into smbms_provider(`proCode`,`proName`,`proDesc`,`proContact`,`proPhone`,`proAddress`,`proFax`,`createdBy`,`creationDate`,comptyLicPicPath)
+        values(#{proCode},#{proName},#{proDesc},#{proContact},#{proPhone},#{proAddress},#{proFax},#{createdBy},#{creationDate},#{comptyLicPicPath})
+    </insert>
+
+</mapper>
